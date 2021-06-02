@@ -93,7 +93,7 @@ public class CustomersPageController {
     private void onNumberOfCustomersByCountryReportClicked() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(CustomersPageController.class.getResource("NumberOfCustomersByCountryReport.fxml"));
+            loader.setLocation(CustomersPageController.class.getResource("/NumberOfCustomersByCountryReport.fxml"));
             AnchorPane page = loader.load();
 
             Scene scene = new Scene(page);
@@ -120,7 +120,7 @@ public class CustomersPageController {
         if(customerSelected != null) {
             try {
                 FXMLLoader loader = new FXMLLoader();
-                loader.setLocation(CustomersPageController.class.getResource("CustomerSchedule.fxml"));
+                loader.setLocation(CustomersPageController.class.getResource("/CustomerSchedule.fxml"));
                 AnchorPane page = loader.load();
 
                 Scene scene = new Scene(page);
@@ -147,7 +147,7 @@ public class CustomersPageController {
     private void onAddCustomerClicked() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(CustomersPageController.class.getResource("AddCustomerDialog.fxml"));
+            loader.setLocation(CustomersPageController.class.getResource("/AddCustomerDialog.fxml"));
             AnchorPane page = loader.load();
 
             Scene scene = new Scene(page);
@@ -176,7 +176,7 @@ public class CustomersPageController {
         if(customerToEdit != null) {
             try {
                 FXMLLoader loader = new FXMLLoader();
-                loader.setLocation(CustomersPageController.class.getResource("EditCustomerDialog.fxml"));
+                loader.setLocation(CustomersPageController.class.getResource("/EditCustomerDialog.fxml"));
                 AnchorPane page = loader.load();
 
                 Scene scene = new Scene(page);

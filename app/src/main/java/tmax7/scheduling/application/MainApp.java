@@ -43,20 +43,24 @@ public class MainApp extends Application {
     private ObservableList<City> cities = FXCollections.observableArrayList();
     private ObservableList<Country> countries = FXCollections.observableArrayList();
 
-    //start method
+    // Start method
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
 
-        //create List Of Countries
+        // Create List Of Countries
         this.arrayOfCountryNames = createArrayOfCountryNames();
-        // sets the language and country based on user's system's default
+        // Sets the language and country based on user's system's default
         setLocale(Locale.getDefault());
-        //connect to uCertify database
+
+        // Load the JDBC driver for MySQL
+        Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+
+        // connect to uCertify database
         connectToDatabase();
-        //show login form
+        // show login form
         showLogInForm();
-        //get data from database after user logged in
+        // get data from database after user logged in
         retrieveDataFromDatabase();
     }
 
@@ -369,7 +373,7 @@ public class MainApp extends Application {
     private void showLogInForm() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(MainApp.class.getResource("LogInForm.fxml"));
+            loader.setLocation(MainApp.class.getResource("/LogInForm.fxml"));
             AnchorPane logInForm = (AnchorPane) loader.load();
 
             LogInFormController controller = loader.getController();
@@ -415,7 +419,7 @@ public class MainApp extends Application {
     public void showBusinessHoursDialog() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(MainApp.class.getResource("BusinessHoursPage.fxml"));
+            loader.setLocation(MainApp.class.getResource("/BusinessHoursPage.fxml"));
             AnchorPane businessHoursPage = loader.load();
 
             BusinessHoursPageController controller = loader.getController();
@@ -436,7 +440,7 @@ public class MainApp extends Application {
     public void showUserPage() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(MainApp.class.getResource("UserPage.fxml"));
+            loader.setLocation(MainApp.class.getResource("/UserPage.fxml"));
             AnchorPane userPage = (AnchorPane) loader.load();
 
             UserPageController controller = loader.getController();

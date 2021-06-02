@@ -1,26 +1,26 @@
 package tmax7.scheduling.application.controllers;
 
+
+import com.sun.jdi.InternalException;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import jdk.nashorn.internal.runtime.regexp.joni.exception.InternalException;
 import tmax7.scheduling.application.*;
-import tmax7.scheduling.application.controllers.CustomersPageController;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class EditCustomerDialogController {
+public class AddCustomerDialogController {
     private MainApp mainApp;
     private Connection databaseConnection;
     private Stage stage;
-    private Customer customerToEdit;
-    private CustomersPageController customersPageController;
+    private TableView<Customer> customerTableView;
 
     @FXML
     private TextField nameTextField;
@@ -38,6 +38,12 @@ public class EditCustomerDialogController {
     private TextField phoneTextField;
 
     @FXML
+    private void initialize() {
+        //set default address2Test to none
+        address2TextField.setText("none");
+    }
+
+    @FXML
     private void onOkClicked() {
         if(isInputValid()) {
             String name = nameTextField.getText();
@@ -47,33 +53,19 @@ public class EditCustomerDialogController {
             String country = countryComboBox.getValue();
             String postalCode = postalCodeTextField.getText();
             String phone = phoneTextField.getText();
-            String lastUpdateBy = mainApp.getUserName();
+
             String createdBy = mainApp.getUserName();
+            String lastUpdateBy = createdBy;
 
+            //create objects from text field input and userName from mainApp
+            Customer customerObject = new Customer(name, createdBy, lastUpdateBy);
+            Address addressObject = new Address(address, address2, postalCode, phone, createdBy, lastUpdateBy);
+            City cityObject = new City(city, createdBy, lastUpdateBy);
+            Country countryObject = new Country(country, createdBy, lastUpdateBy);
+
+            /*adds objects to database and update them with database generated id's*/
+            // adds countryObject to database only if it is not already in database
             try {
-                //change customer name in customer table in the database
-                customerToEdit.setCustomerName(name);
-                customerToEdit.setLastUpdateBy(lastUpdateBy);
-                String updateCustomerString = "UPDATE customer SET " +
-                        "customerName = \'" + name + "\', " +
-                        "lastUpdate = NOW(), " +
-                        "lastUpdateBy = \'" + lastUpdateBy + "\' " +
-                        "WHERE customerId = " + customerToEdit.getCustomerId();
-                PreparedStatement updateCustomer = databaseConnection.prepareStatement(updateCustomerString);
-                updateCustomer.executeUpdate();
-
-                //edit Address info in Customer
-                customerToEdit.getAddress().setAddress(address);
-                customerToEdit.getAddress().setAddress2(address2);
-                customerToEdit.getAddress().setPostalCode(postalCode);
-                customerToEdit.getAddress().setPhone(phone);
-
-                //create objects from text field input and userName from mainApp
-                City cityObject = new City(city, createdBy, lastUpdateBy);
-                Country countryObject = new Country(country, createdBy, lastUpdateBy);
-
-                /*adds objects to database and update them with database generated id's*/
-                // adds countryObject to database only if it is not already in database
                 int countryId = isCountryInDatabase(countryObject) ? getCountryIdFromDatabase(countryObject) : addCountryIntoDatabase(countryObject);
                 countryObject.setCountryId(countryId);
 
@@ -81,35 +73,16 @@ public class EditCustomerDialogController {
                 int cityId = isCityInDatabase(cityObject) ? getCityIdFromDatabase(cityObject) : addCityIntoDatabase(cityObject);
                 cityObject.setCityId(cityId);
 
-                // set customers addressObject with created cityObject that contains created countryObject
-                customerToEdit.getAddress().setCity(cityObject);
 
-                //update address info in database
-                Address addressObject = customerToEdit.getAddress();
-                String updateAddressString = "UPDATE address SET " +
-                        "address = \'" + addressObject.getAddress() + "\', " +
-                        "address2 = \'" + addressObject.getAddress2() + "\', " +
-                        "cityId = " + addressObject.getCityId() + ", " +
-                        "postalCode = \'" + addressObject.getPostalCode() + "\'," +
-                        "phone = \'" + addressObject.getPhone() + "\'," +
-                        "lastUpdate = NOW(), " +
-                        "lastUpdateBy = \'" + lastUpdateBy + "\'" +
-                        "WHERE addressId = " + addressObject.getAddressId();
-                PreparedStatement updateAddress = databaseConnection.prepareStatement(updateAddressString);
-                updateAddress.executeUpdate();
+                addressObject.setCity(cityObject);
+                int addressId = addAddressIntoDataBase(addressObject);
+                addressObject.setAddressId(addressId);
 
-                customersPageController.refreshCustomersTableView();
-                //close stage
-                stage.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+                customerObject.setAddress(addressObject);
+                int customerId = addCustomerIntoDatabase(customerObject);
+                customerObject.setCustomerId(customerId);
 
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText(null);
-                alert.setContentText(e.getMessage());
-
-                alert.showAndWait();
+                mainApp.getCustomers().add(customerObject);
             } catch (InternalException e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
@@ -118,45 +91,47 @@ public class EditCustomerDialogController {
 
                 alert.showAndWait();
             }
+
+            stage.close();
         }
     }
 
     private boolean isInputValid() {
-        String errorMessage = "";
+       String errorMessage = "";
 
-        if(nameTextField.getText() == null || nameTextField.getText().equals("")) {
-            errorMessage += "Name field cannot be empty\n";
-        }
-        if(addressTextField.getText() == null || nameTextField.getText().equals("")) {
-            errorMessage += "Address field cannot be empty\n";
-        }
-        if(address2TextField.getText() == null || address2TextField.getText().equals("")) {
-            errorMessage += "Address 2 field cannot be empty: it must contain \"none\" or an address\n";
-        }
-        if(cityTextField.getText() == null || cityTextField.getText().equals("")) {
-            errorMessage += "City field cannot be empty\n";
-        }
-        if(countryComboBox.getValue() == null || countryComboBox.getValue().equals("")) {
-            errorMessage += "A country must be selected\n";
-        }
-        if(postalCodeTextField.getText() == null || postalCodeTextField.getText().equals("")) {
-            errorMessage += "Postal Code field cannot be empty\n";
-        }
-        if(phoneTextField.getText() == null || phoneTextField.getText().equals("")) {
-            errorMessage += "Phone field cannot be empty\n";
-        }
+       if(nameTextField.getText() == null || nameTextField.getText().equals("")) {
+           errorMessage += "Name field cannot be empty\n";
+       }
+       if(addressTextField.getText() == null || nameTextField.getText().equals("")) {
+           errorMessage += "Address field cannot be empty\n";
+       }
+       if(address2TextField.getText() == null || address2TextField.getText().equals("")) {
+           errorMessage += "Address 2 field cannot be empty: it must contain \"none\" or an address\n";
+       }
+       if(cityTextField.getText() == null || cityTextField.getText().equals("")) {
+           errorMessage += "City field cannot be empty\n";
+       }
+       if(countryComboBox.getValue() == null || countryComboBox.getValue().equals("")) {
+           errorMessage += "A country must be selected\n";
+       }
+       if(postalCodeTextField.getText() == null || postalCodeTextField.getText().equals("")) {
+           errorMessage += "Postal Code field cannot be empty\n";
+       }
+       if(phoneTextField.getText() == null || phoneTextField.getText().equals("")) {
+           errorMessage += "Phone field cannot be empty\n";
+       }
 
-        if(errorMessage.equals("")) {
-            return true;
-        } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText(null);
-            alert.setContentText(errorMessage);
+       if(errorMessage.equals("")) {
+           return true;
+       } else {
+           Alert alert = new Alert(Alert.AlertType.ERROR);
+           alert.setTitle("Error");
+           alert.setHeaderText(null);
+           alert.setContentText(errorMessage);
 
-            alert.showAndWait();
-            return false;
-        }
+           alert.showAndWait();
+           return false;
+       }
     }
 
     private boolean isCountryInDatabase(Country countryObject) {
@@ -265,7 +240,7 @@ public class EditCustomerDialogController {
 
                 //statement to insert city into city table
                 String insertCityString = "INSERT INTO city(city, countryId, createDate, createdBy, lastUpdateBy) VALUES(" +
-                        "\'" + cityName +"\', " + countryId + ", NOW(), \'" + createdBy +"\', \'" + lastUpdateBy + "\')";
+                                            "\'" + cityName +"\', " + countryId + ", NOW(), \'" + createdBy +"\', \'" + lastUpdateBy + "\')";
                 PreparedStatement insertCity = databaseConnection.prepareStatement(insertCityString);
                 insertCity.executeUpdate();
 
@@ -281,9 +256,84 @@ public class EditCustomerDialogController {
                 e.printStackTrace();
                 return 0;
             }
+        } else {
+            throw new InternalException("Something went wrong adding city into database");
+        }
+    }
+
+    private int addAddressIntoDataBase(Address addressObject) {
+        if(addressObject.getCityId() != 0) {
+            String address = addressObject.getAddress();
+            String address2 = addressObject.getAddress2();
+            int cityId = addressObject.getCityId();
+            String postalCode = addressObject.getPostalCode();
+            String phone = addressObject.getPhone();
+            String createdBy = addressObject.getCreatedBy();
+            String lastUpdateBy = addressObject.getLastUpdateBy();
+
+            try {
+                //statement to get id of last record inserted
+                String selectLastInsertIdString = "SELECT LAST_INSERT_ID()";
+                PreparedStatement selectLastInsertId = databaseConnection.prepareStatement(selectLastInsertIdString);
+
+                //statement to insert address into address table
+                String insertAddressString = "INSERT INTO address(address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdateBy) VALUES("
+                        + "\'" + address + "\', \'" + address2 + "\', " + cityId + ", \'" + postalCode + "\', \'" + phone + "\', NOW(), \'" + createdBy + "\', \'" + lastUpdateBy + "\')";
+
+                PreparedStatement insertAddress = databaseConnection.prepareStatement(insertAddressString);
+                insertAddress.executeUpdate();
+
+                //get id of inserted address and return it
+                ResultSet lastInsertResultSet = selectLastInsertId.executeQuery();
+                lastInsertResultSet.next();
+                int firstColumn = 1;
+                int addressId_OfInsertedAddress = lastInsertResultSet.getInt(firstColumn);
+
+                return addressId_OfInsertedAddress;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return 0;
+            }
         }  else {
-            //TODO see if should do different exception handling here and everywhere where InternalException is thrown
-            throw new InternalException("Something went wrong when adding city into database");
+            throw new InternalException("Something went wrong when adding address into database");
+        }
+    }
+
+    private int addCustomerIntoDatabase(Customer customerObject) {
+        if(customerObject.getAddressId() != 0) {
+            String customerName = customerObject.getCustomerName();
+            int addressId = customerObject.getAddressId();
+            byte active = customerObject.getActive();
+            String createdBy = customerObject.getCreatedBy();
+            String lastUpdateBy = customerObject.getLastUpdateBy();
+
+            try {
+                //statement to get id of last record inserted
+                String selectLastInsertIdString = "SELECT LAST_INSERT_ID()";
+                PreparedStatement selectLastInsertId = databaseConnection.prepareStatement(selectLastInsertIdString);
+
+                //statement to insert customer into customer table
+                String insertCustomerString = "INSERT INTO customer(customerName, addressId, active, createDate, createdBy, lastUpdateBy) VALUES("
+                                                + "\'" + customerName + "\', " + addressId + ", " + active + ", NOW(), \'" + createdBy + "\', \'" + lastUpdateBy + "\')";
+                PreparedStatement insertCustomer = databaseConnection.prepareStatement(insertCustomerString);
+                insertCustomer.executeUpdate();
+
+                //get id of inserted customer and return it
+                ResultSet lastInsertResultSet = selectLastInsertId.executeQuery();
+                lastInsertResultSet.next();
+                int firstColumn = 1;
+                int customerId_OfInsertedCustomer = lastInsertResultSet.getInt(firstColumn);
+
+                return customerId_OfInsertedCustomer;
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return 0;
+            }
+        }  else {
+            //TODO see if should do different error handling here and everywhere where InternalException thrown
+            throw new InternalException("Something went wrong when adding customer into database");
         }
     }
 
@@ -292,9 +342,10 @@ public class EditCustomerDialogController {
         stage.close();
     }
 
+    //setters
     public void setMainApp(MainApp mainApp) {
         this.mainApp = mainApp;
-        this.databaseConnection = this.mainApp.getDatabaseConnection();
+        this.databaseConnection = mainApp.getDatabaseConnection();
         countryComboBox.setItems(FXCollections.observableArrayList(mainApp.getArrayOfCountryNames()));
     }
 
@@ -302,20 +353,8 @@ public class EditCustomerDialogController {
         this.stage = stage;
     }
 
-    public void setCustomer(Customer customerToEdit) {
-        this.customerToEdit = customerToEdit;
-        if(this.customerToEdit != null) {
-            nameTextField.setText(customerToEdit.getCustomerName());
-            addressTextField.setText(customerToEdit.getAddress().getAddress());
-            address2TextField.setText(customerToEdit.getAddress().getAddress2());
-            cityTextField.setText(customerToEdit.getAddress().getCity().getCityName());
-            countryComboBox.setValue(customerToEdit.getAddress().getCity().getCountry().getCountryName());
-            postalCodeTextField.setText(customerToEdit.getAddress().getPostalCode());
-            phoneTextField.setText(customerToEdit.getAddress().getPhone());
-        }
+    public void setCustomerTableView(TableView<Customer> customerTableView) {
+        this.customerTableView = customerTableView;
     }
 
-    public void setCustomersPageController(CustomersPageController controller) {
-        this.customersPageController = controller;
-    }
 }

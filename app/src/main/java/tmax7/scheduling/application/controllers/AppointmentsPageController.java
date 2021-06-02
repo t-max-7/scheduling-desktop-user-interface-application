@@ -97,7 +97,7 @@ public class AppointmentsPageController {
     private void onAppointmentTypeReportClicked() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(AppointmentsPageController.class.getResource("AppointmentTypeReport.fxml"));
+            loader.setLocation(AppointmentsPageController.class.getResource("/AppointmentTypeReport.fxml"));
             AnchorPane page = loader.load();
 
             Scene scene = new Scene(page);
@@ -125,7 +125,7 @@ public class AppointmentsPageController {
         if(selectedAppointment != null) {
             try {
                 FXMLLoader loader = new FXMLLoader();
-                loader.setLocation(AppointmentsPageController.class.getResource("CustomerInfo.fxml"));
+                loader.setLocation(AppointmentsPageController.class.getResource("/CustomerInfo.fxml"));
                 AnchorPane page = loader.load();
 
                 Scene scene = new Scene(page);
@@ -158,7 +158,7 @@ public class AppointmentsPageController {
     private void onAddAppointmentClicked() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(AppointmentsPageController.class.getResource("AddAppointmentDialog.fxml"));
+            loader.setLocation(AppointmentsPageController.class.getResource("/AddAppointmentDialog.fxml"));
             AnchorPane dialog = loader.load();
 
             Scene scene = new Scene(dialog);
@@ -186,7 +186,7 @@ public class AppointmentsPageController {
         if (appointmentToEdit != null) {
             try {
                 FXMLLoader loader = new FXMLLoader();
-                loader.setLocation(AppointmentsPageController.class.getResource("EditAppointmentDialog.fxml"));
+                loader.setLocation(AppointmentsPageController.class.getResource("/EditAppointmentDialog.fxml"));
                 AnchorPane page = loader.load();
 
                 Scene scene = new Scene(page);

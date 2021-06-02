@@ -172,7 +172,7 @@ public class UserPageController {
     public void showCustomersPage() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(UserPageController.class.getResource("CustomersPage.fxml"));
+            loader.setLocation(UserPageController.class.getResource("/CustomersPage.fxml"));
             AnchorPane customerPage = loader.load();
 
             CustomersPageController controller = loader.getController();
@@ -197,7 +197,7 @@ public class UserPageController {
     public void showAppointmentsPage() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(UserPageController.class.getResource("AppointmentsPage.fxml"));
+            loader.setLocation(UserPageController.class.getResource("/AppointmentsPage.fxml"));
             AnchorPane appointmentsPage = loader.load();
 
             AppointmentsPageController controller = loader.getController();
@@ -222,7 +222,7 @@ public class UserPageController {
     public void showCalendarMonthPage() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(UserPageController.class.getResource("CalendarMonthPage.fxml"));
+            loader.setLocation(UserPageController.class.getResource("/CalendarMonthPage.fxml"));
             AnchorPane calendarPage = loader.load();
 
             CalendarMonthPageController controller = loader.getController();
@@ -247,7 +247,7 @@ public class UserPageController {
     public void showCalendarWeeklyViewPage() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(UserPageController.class.getResource("CalendarWeeklyViewPage.fxml"));
+            loader.setLocation(UserPageController.class.getResource("/CalendarWeeklyViewPage.fxml"));
             AnchorPane weeklyViewPage = loader.load();
 
             CalendarWeeklyViewPageController controller = loader.getController();
@@ -272,7 +272,7 @@ public class UserPageController {
     public void showConsultantsPage() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(UserPageController.class.getResource("ConsultantsPage.fxml"));
+            loader.setLocation(UserPageController.class.getResource("/ConsultantsPage.fxml"));
             AnchorPane consultantsPage = loader.load();
 
             ConsultantsPageController controller = loader.getController();
