@@ -1,5 +1,5 @@
 # Scheduling Desktop User Interface Application
-A scheduling application for consultants to keep track of their customers and appointments. 
+A scheduling application designed for consultants to keep track of their customers and appointments. 
 The login is 
 - Username: test
 - Password: test
